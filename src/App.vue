@@ -1,35 +1,41 @@
 <template>
   <div>
     <h1>WEATHER API CC</h1>
-    <div class="input-wrapper">
-      <input type="text" v-model="location">
-      <button-cmp @clicked="addLocation(location)">Add</button-cmp>
-    </div>
+    
+    <search 
+      v-model="location"
+      @add="addLocation(location)" />
+
     <div class="widgets-wrapper">
       <widget
         v-for="item of addedLocations"
         :key="item.id"
         :data="item"
-        @remove="removeWidget(item.id)" />
+        @remove="removeLocation(item.id)" />
     </div>
-    <div v-if="addedLocations.length" class="order">
-      Order by: <span @click="orderByName()">Name</span>
-    </div>
+
+    <filters
+      v-if="addedLocations.length"
+      ref="filters"
+      v-model="addedLocations" />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import mainApi from './apis/mainApi'
+import weatherApi from './apis/weatherApi'
 import WeatherLocation from './types/WeatherLocation'
+import { FiltersRef } from './types/filters'
 
-import ButtonCmp from './components/ButtonCmp.vue'
+import Search from './components/Search.vue'
 import Widget from './components/Widget.vue'
+import Filters from './components/Filters.vue'
 
 export default defineComponent({
   components: {
-    ButtonCmp,
-    Widget
+    Search,
+    Widget,
+    Filters
   },
 
   data() {
@@ -40,44 +46,70 @@ export default defineComponent({
   },
 
   methods: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async getWeatherForLocation(location: string): Promise<any> {
-      return await mainApi.get({
-        path: 'data/2.5/weather',
-        query: {
-          q: location,
-          units: 'metric',
-          APPID: process.env.VUE_APP_API_KEY
-        }
-      })
+      try {
+        return await weatherApi.get({
+          path: 'data/2.5/weather',
+          query: {
+            q: location,
+            units: 'metric',
+            APPID: process.env.VUE_APP_WEATHER_API_KEY
+          }
+        })
+      } catch {
+        alert('City not found.')
+      }
     },
 
     async addLocation(location: string) {
-      const { data } = await this.getWeatherForLocation(location)
-      this.addedLocations.push({
+      const response = await this.getWeatherForLocation(location)
+      this.location = ''
+      if (!response) return
+
+      const locationItem: WeatherLocation = this.createLocationItem(response.data)
+      const alreadyAdded: boolean = this.addedLocations.some(item => item.id === locationItem.id)
+      if (alreadyAdded) {
+        alert('City is already added.')
+        return
+      }
+
+      this.addedLocations = this.itemAdded(locationItem, this.addedLocations)
+      this.$nextTick(() => this.applyFilters())
+    },
+
+    removeLocation(id: number) {
+      this.addedLocations = this.itemRemoved(id, this.addedLocations)
+    },
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    createLocationItem(data: any): WeatherLocation {
+      return {
         id: data.id,
         city: data.name,
         country: data.sys.country,
         temperature: Math.round(data.main.temp),
-        weatherDescription: data.weather[0].description
-      })
+        weatherIcon: data.weather[0].icon,
+        isVisibleBy: {
+          country: true,
+          tempRange: true
+        }
+      }
     },
 
-    removeWidget (id: number) {
-      this.addedLocations = this.addedLocations.filter(item => item.id !== id)
+    applyFilters() {
+      const filtersCmp = this.$refs.filters as FiltersRef
+      filtersCmp.reFilter()
     },
 
-    orderByName(): WeatherLocation[] {
-      return this.addedLocations.sort((a, b) => {
-        const cityA = a.city.toUpperCase()
-        const cityB = b.city.toUpperCase()
-        if (cityA < cityB) {
-          return -1
-        }
-        if (cityA > cityB) {
-          return 1
-        }
-        return 0
-      })
+    itemAdded(item: WeatherLocation, locations: WeatherLocation[]): WeatherLocation[] {
+      const clone = [...locations]
+      clone.push(item)
+      return clone
+    },
+
+    itemRemoved(id: number, locations: WeatherLocation[]): WeatherLocation[] {
+      return [...locations].filter((item: WeatherLocation) => item.id !== id)
     }
   }
 })
@@ -93,35 +125,23 @@ export default defineComponent({
   font-family: sans-serif;
   color: $font_color;
   text-align: center;
-  @include fontSizeRem(10, 16);
+  @include fontSizeRem(12, 16);
 }
 
 h1 {
   @include fontSizeRem(20, 40);
   text-align: center;
   margin: 1rem 0;
+
   @include breakpoint(desktop) {
     margin: 2rem 0;
   }
 }
 
-.input-wrapper {
+input {
+  outline: none;
   border: 1px solid $light_grey;
-  padding: 3rem;
-  margin-bottom: 2rem;
-
-  input {
-    outline: none;
-    border: 1px solid $light_grey;
-    padding: .5rem;
-    margin-right: 1rem;
-  }
-}
-
-.order {
-  span {
-    color: $blue;
-    cursor: pointer;
-  }
+  padding: .5rem;
+  margin: 0 1rem;
 }
 </style>

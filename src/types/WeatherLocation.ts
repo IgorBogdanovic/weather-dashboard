@@ -3,5 +3,9 @@ export default interface WeatherLocation {
   city: string;
   country: string;
   temperature: number;
-  weatherDescription: string;
+  weatherIcon: string;
+  isVisibleBy: {
+    country: boolean;
+    tempRange: boolean;
+  };
 }
