@@ -39,6 +39,7 @@ export default defineComponent({
   display: flex;
   justify-content: space-between;
   border: 1px solid $light_grey;
+  border-radius: 15px;
   padding: 1.5rem 3rem;
   margin-top: 1rem;
   margin-bottom: 2rem;

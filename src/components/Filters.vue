@@ -3,7 +3,7 @@
     <order @filter="filterBy($event)" />
     <hr>
     <country @filter="filterBy($event)" />
-    <temperature @filter="filterBy($event)" />
+    <temperature-range @filter="filterBy($event)" />
   </div>
 </template>
 
@@ -14,7 +14,7 @@ import { FilterActivator, AppliedFilters, TempRange } from '../types/filters'
 
 import Order from './filters/Order.vue'
 import Country from './filters/Country.vue'
-import Temperature from './filters/Temperature.vue'
+import TemperatureRange from './filters/TemperatureRange.vue'
 
 export default defineComponent({
   name: 'Filters',
@@ -22,7 +22,7 @@ export default defineComponent({
   components: {
     Order,
     Country,
-    Temperature
+    TemperatureRange
   },
 
   props: {
