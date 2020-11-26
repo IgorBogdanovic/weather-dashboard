@@ -1,49 +1,29 @@
 <template>
   <div class="filter-wrapper">
-    <div class="order-by">
-      Order by: 
-      <span @click="filterBy({ filterBy: 'name' })">Name</span>
-      |
-      <span @click="filterBy({ filterBy: 'temperature' })">Temperature</span>
-    </div>
+    <order @filter="filterBy($event)" />
     <hr>
-    
-    <div class="country">
-      Country:
-      <div
-        v-for="country of countries"
-        :key="country.id"
-        class="checkbox-wrapper">
-        <input
-          type="checkbox"
-          :id="country.name"
-          :name="country.name"
-          :value="country.id"
-          :checked="country.selected"
-          @input="selectCountry($event.target.value)">
-        <label :for="country.name">{{ country.name }}</label>
-      </div>
-    </div>
-
-    <div class="temperature">
-      Temperature:
-      <div class="inputs">
-        from:
-        <input type="number" v-model="tempRange.from" @input="onTempRangeInput()">
-        to:
-        <input type="number" v-model="tempRange.to" @input="onTempRangeInput()">
-      </div>
-    </div>
+    <country @filter="filterBy($event)" />
+    <temperature @filter="filterBy($event)" />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
 import WeatherLocation from '../types/WeatherLocation'
-import { CountryData, FilterActivator, AppliedFilters, TempRange } from '../types/filters'
+import { FilterActivator, AppliedFilters, TempRange } from '../types/filters'
+
+import Order from './filters/Order.vue'
+import Country from './filters/Country.vue'
+import Temperature from './filters/Temperature.vue'
 
 export default defineComponent({
   name: 'Filters',
+
+  components: {
+    Order,
+    Country,
+    Temperature
+  },
 
   props: {
     modelValue: {
@@ -54,15 +34,8 @@ export default defineComponent({
 
   data() {
     return {
-      countries: [
-        { id: 'RS', name: 'Serbia', selected: false },
-        { id: 'CH', name: 'Switzerland', selected: false },
-        { id: 'NL', name: 'Netherlands', selected: false }
-      ] as CountryData[],
-
       filtered: [] as WeatherLocation[],
-      appliedFilters: [] as AppliedFilters[],
-      tempRange: { from: '0', to: '100' } as TempRange
+      appliedFilters: [] as AppliedFilters[]
     }
   },
 
@@ -71,26 +44,6 @@ export default defineComponent({
       for (const { filterBy, payload } of this.appliedFilters) {
         await this.filterBy({ filterBy, payload })
       }
-    },
-
-    selectCountry(countryId: string) {
-      const payload = this.countries.reduce((acc: string[], cur: CountryData) => {
-        if (cur.id === countryId) {
-          cur.selected = !cur.selected
-        }
-        if (cur.selected) {
-          acc.push(cur.id)
-        }
-        return acc
-      }, [])
-      this.filterBy({ filterBy: 'country', payload })
-    },
-
-    onTempRangeInput() {
-      this.filterBy({ filterBy: 'tempRange', payload: { 
-        from: this.tempRange.from,
-        to: this.tempRange.to
-      }})
     },
 
     async filterBy({ filterBy, payload = null }: AppliedFilters) {
@@ -175,54 +128,8 @@ export default defineComponent({
   border: 1px solid $light_grey;
   padding: 3rem;
 
-  span {
-    color: $blue;
-    cursor: pointer;
-  }
-
   hr {
     margin: 1.5rem 0;
-  }
-
-  .checkbox-wrapper {
-    display: flex;
-    vertical-align: bottom;
-    margin-top: 1rem;
-
-    @include breakpoint(desktop) {
-      display: inline-flex;
-      margin: 0;
-    }
-
-    input, label {
-      cursor: pointer;
-    }
-  }
-
-  .country {
-    margin-bottom: 1.5rem;
-  }
-
-  .temperature {
-    margin-top: 2rem;
-
-    .inputs {
-      margin: .5rem 0 0 1rem;
-
-      @include breakpoint(desktop) {
-        margin: .5rem 0 0 0;
-      }
-
-      input {
-        width: 6rem;
-        border-radius: 4px;
-        text-align: right;
-
-        @include breakpoint(desktop) {
-          width: 8rem;
-        }
-      }
-    }
   }
 }
 </style>

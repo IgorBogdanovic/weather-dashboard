@@ -44,7 +44,7 @@ export default defineComponent({
   margin-bottom: 2rem;
 
   .location-info {
-    @include fontSizeRem(14, 24);
+    @include fontSizeRem(14, 20);
     display: flex;
     align-items: center;
   }
