@@ -139,9 +139,16 @@ h1 {
 }
 
 input {
+  @include fontSizeRem(12, 16);
   outline: none;
   border: 1px solid $light_grey;
   padding: .5rem;
   margin: 0 1rem;
+
+  &[type='checkbox'] {
+    @include breakpoint(desktop) {
+      width: 2.5rem;
+    }
+  }
 }
 </style>

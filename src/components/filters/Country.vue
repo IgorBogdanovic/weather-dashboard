@@ -57,7 +57,8 @@ export default defineComponent({
 
   .checkbox-wrapper {
     display: flex;
-    vertical-align: bottom;
+    align-items: center;
+    vertical-align: middle;
     margin-top: 1rem;
 
     @include breakpoint(desktop) {
