@@ -1,7 +1,7 @@
 import { AxiosInstance } from 'axios'
 import { GetRequestData, PostRequestData, PutRequestData, DeleteRequestData } from './apiRequestDataTypes'
 
-export default class MainApi {
+export default class Api {
   #axios: AxiosInstance
 
   constructor (axios: AxiosInstance) {
